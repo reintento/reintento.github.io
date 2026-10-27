@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reintento</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Reintento: páginas web, sistemas y CRMs a medida para empresas de El Salvador y Latinoamérica, y herramientas listas para call centers. Fallamos. Reintentamos. Exit 0.">
+<meta property="og:title" content="Reintento · Software que no se rinde hasta funcionar">
+<meta property="og:description" content="Webs, sistemas a medida y herramientas para call centers. Fallamos. Reintentamos. Exit 0.">
+<meta property="og:type" content="website">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: una columna editorial alineada a la izquierda; el héroe es una terminal que falla, reintenta y termina en exit 0. Una sola banda oscura (productos). */
+:root {
+  --bg: #F6F5F1;
+  --bg-alt: #ECEAE4;
+  --fg: #0E1116;
+  --muted: #4A505A;
+  --line: #D6D3CA;
+  --accent: #15803D;
+  --accent-hover: #0F6630;
+  --accent-fg: #FFFFFF;
+  --error: #B93A27;
+  --band-bg: #0E1116;
+  --band-fg: #F1EFEA;
+  --band-muted: #A9B0BA;
+  --band-line: #2A2F37;
+  --band-accent: #3DDC84;
+  --term-bg: #0E1116;
+  --term-fg: #E6E4DF;
+  --term-dim: #8C939E;
+  --term-ok: #3DDC84;
+  --term-err: #FF8A73;
+  --term-bar: #1B2028;
+  --font-display: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --font-body: "Space Grotesk", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --wrap: 1160px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1116; --bg-alt: #151920; --fg: #F1EFEA; --muted: #A9B0BA; --line: #2A2F37;
+    --accent: #3DDC84; --accent-hover: #6BE7A3; --accent-fg: #0E1116; --error: #FF8A73;
+    --band-bg: #151920; --band-fg: #F1EFEA; --band-muted: #A9B0BA; --band-line: #2E343D; --band-accent: #3DDC84;
+    --term-bg: #07090C; --term-fg: #E6E4DF; --term-dim: #8C939E; --term-ok: #3DDC84; --term-err: #FF8A73; --term-bar: #12161C;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1116; --bg-alt: #151920; --fg: #F1EFEA; --muted: #A9B0BA; --line: #2A2F37;
+  --accent: #3DDC84; --accent-hover: #6BE7A3; --accent-fg: #0E1116; --error: #FF8A73;
+  --band-bg: #151920; --band-fg: #F1EFEA; --band-muted: #A9B0BA; --band-line: #2E343D; --band-accent: #3DDC84;
+  --term-bg: #07090C; --term-fg: #E6E4DF; --term-dim: #8C939E; --term-ok: #3DDC84; --term-err: #FF8A73; --term-bar: #12161C;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 88px; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+img, svg { max-width: 100%; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.1; text-wrap: balance; margin: 0; }
+h2 { font-size: clamp(30px, 4.4vw, 46px); font-weight: 800; letter-spacing: -0.03em; }
+h3 { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+p { margin: 0; }
+a { color: var(--accent); }
+a:hover { color: var(--accent-hover); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+.wrap {
+  max-width: var(--wrap);
+  margin-inline: auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.skip { position: absolute; left: -9999px; top: 8px; background: var(--fg); color: var(--bg); padding: 8px 14px; z-index: 50; }
+.skip:focus { left: 16px; }
+
+/* Botones */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 48px; padding: 0 22px; border-radius: 10px;
+  font-family: var(--font-body); font-size: 17px; font-weight: 600;
+  text-decoration: none; border: 2px solid transparent; cursor: pointer;
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+.btn-primary { background: var(--accent); color: var(--accent-fg); }
+.btn-primary:hover { background: var(--accent-hover); color: var(--accent-fg); }
+.btn-ghost { border-color: var(--fg); color: var(--fg); background: transparent; }
+.btn-ghost:hover { background: var(--fg); color: var(--bg); }
+
+/* Cabecera */
+.site-header {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.header-row { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 72px; }
+.logo { display: inline-flex; align-items: center; gap: 10px; color: var(--fg); text-decoration: none; }
+.logo:hover { color: var(--fg); }
+.logo-word { font-family: var(--font-display); font-weight: 800; font-size: 24px; letter-spacing: -0.04em; }
+.logo-word span { color: var(--accent); }
+.nav { display: flex; align-items: center; gap: 28px; }
+.nav-links { display: flex; gap: 24px; list-style: none; margin: 0; padding: 0; }
+.nav-links a { color: var(--fg); text-decoration: none; font-weight: 500; font-size: 16px; }
+.nav-links a:hover { color: var(--accent); }
+.nav-toggle { display: none; background: none; border: 2px solid var(--fg); color: var(--fg); border-radius: 10px; min-height: 44px; padding: 0 14px; font: 600 16px var(--font-body); cursor: pointer; }
+.nav .btn { min-height: 44px; font-size: 16px; }
+
+/* Héroe */
+.hero { padding-block: clamp(48px, 8vw, 96px) clamp(56px, 8vw, 104px); }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: clamp(32px, 5vw, 64px); align-items: center; }
+.hero h1 { font-size: clamp(40px, 6.2vw, 72px); font-weight: 800; letter-spacing: -0.045em; line-height: 1.02; }
+.hero-lead { margin-top: 24px; font-size: 20px; color: var(--muted); max-width: 34em; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+.hero-note { margin-top: 18px; font-size: 16px; color: var(--muted); }
+
+.term { background: var(--term-bg); color: var(--term-fg); border-radius: 14px; overflow: hidden; min-width: 0; box-shadow: 0 30px 60px -30px rgba(14, 17, 22, .55); }
+.term-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; background: var(--term-bar); }
+.term-dots { display: flex; gap: 7px; }
+.term-dots i { width: 11px; height: 11px; border-radius: 50%; background: #3A404A; display: block; }
+.term-title { font-family: var(--font-display); font-size: 13px; color: var(--term-dim); }
+.term-replay { background: none; border: 1px solid #3A404A; color: var(--term-fg); font: 500 13px var(--font-display); border-radius: 6px; min-height: 32px; padding: 0 10px; cursor: pointer; }
+.term-replay:hover { border-color: var(--term-ok); color: var(--term-ok); }
+.term-body { font-family: var(--font-display); font-size: 15px; line-height: 1.75; padding: 20px 22px 24px; min-height: 330px; overflow-x: auto; }
+.term-line { white-space: pre-wrap; word-break: break-word; }
+.t-dim { color: var(--term-dim); }
+.t-ok { color: var(--term-ok); }
+.t-err { color: var(--term-err); }
+.t-exit { color: var(--term-ok); font-weight: 800; font-size: 17px; }
+.t-prompt { color: var(--term-ok); }
+.cursor { display: inline-block; width: .6em; height: 1.1em; background: var(--term-fg); vertical-align: text-bottom; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* Secciones */
+.section { padding-block: clamp(64px, 9vw, 112px); }
+.section-head { display: grid; gap: 16px; max-width: 46em; margin-bottom: clamp(36px, 5vw, 56px); }
+.section-head p { font-size: 20px; color: var(--muted); }
+
+/* Servicios: filas, no tarjetas */
+.services { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--fg); }
+.service { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, .8fr); gap: 24px 40px; padding-block: 28px; border-bottom: 1px solid var(--line); align-items: baseline; }
+.service h3 { font-size: 22px; }
+.service p { color: var(--muted); }
+.service .fit { font-size: 16px; color: var(--fg); }
+.service .fit b { font-weight: 600; }
+
+/* Banda de productos */
+.band { background: var(--band-bg); color: var(--band-fg); }
+.band .section-head p { color: var(--band-muted); }
+.band a:not(.btn) { color: var(--band-accent); }
+.products { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 20px; }
+.product { border: 1px solid var(--band-line); border-radius: 16px; padding: clamp(24px, 3vw, 36px); display: flex; flex-direction: column; gap: 14px; }
+.product-main { grid-row: span 2; }
+.product p { color: var(--band-muted); }
+.product ul { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 10px; }
+.product li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; }
+.product li svg { margin-top: 5px; color: var(--band-accent); }
+.product-main h3 { font-size: 28px; }
+.badge-live { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; color: var(--band-accent); }
+.badge-live i { width: 8px; height: 8px; border-radius: 50%; background: var(--band-accent); display: block; }
+.band-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; margin-top: 40px; }
+.band-cta p { color: var(--band-muted); }
+.band .btn-primary { background: var(--band-accent); color: #0E1116; }
+.band .btn-primary:hover { background: #6BE7A3; color: #0E1116; }
+
+/* Proceso: es una secuencia real, por eso va numerado */
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; counter-reset: paso; }
+.step { padding: 28px 24px 8px 0; border-top: 2px solid var(--line); display: grid; gap: 12px; align-content: start; }
+.step + .step { padding-left: 24px; border-left: 1px solid var(--line); }
+.step-num { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--muted); display: flex; align-items: center; gap: 10px; }
+.step-num svg { flex: none; }
+.step p { color: var(--muted); font-size: 17px; }
+.step-retry { border-top-color: var(--error); }
+.step-retry .step-num { color: var(--error); }
+.step-exit { border-top-color: var(--accent); }
+.step-exit .step-num { color: var(--accent); }
+
+/* Precios */
+.prices { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.price { border: 1px solid var(--line); border-radius: 16px; padding: 26px 22px; display: flex; flex-direction: column; gap: 14px; background: var(--bg); }
+.price-dark { background: var(--band-bg); color: var(--band-fg); border-color: var(--band-bg); }
+.price-dark .price-note, .price-dark li { color: var(--band-muted); }
+.price-dark li svg { color: var(--band-accent); }
+.price h3 { font-size: 19px; }
+.price-amount { font-family: var(--font-display); font-weight: 800; font-size: 34px; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+.price-amount small { font-size: 15px; font-weight: 500; letter-spacing: 0; }
+.price-note { font-size: 15px; color: var(--muted); }
+.price ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 16px; }
+.price li { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 8px; color: var(--muted); }
+.price li svg { margin-top: 5px; color: var(--accent); }
+.price .btn { margin-top: auto; }
+.price-dark .btn-ghost { border-color: var(--band-fg); color: var(--band-fg); }
+.price-dark .btn-ghost:hover { background: var(--band-fg); color: var(--band-bg); }
+.prices-foot { margin-top: 24px; color: var(--muted); font-size: 16px; }
+
+/* Preguntas */
+.faq { max-width: 860px; border-top: 2px solid var(--fg); }
+.faq details { border-bottom: 1px solid var(--line); }
+.faq summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 22px 0; font-weight: 600; font-size: 19px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary svg { flex: none; transition: transform .2s ease; }
+.faq details[open] summary svg { transform: rotate(45deg); }
+.faq details p { padding: 0 0 24px; color: var(--muted); max-width: 44em; }
+
+/* Contacto */
+.contact { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(32px, 6vw, 80px); align-items: start; }
+.contact-info { display: grid; gap: 22px; }
+.contact-info p { font-size: 20px; color: var(--muted); }
+.contact-ways { display: grid; gap: 14px; margin: 8px 0 0; }
+.contact-ways div { display: grid; gap: 2px; }
+.contact-ways dt { font-size: 15px; color: var(--muted); }
+.contact-ways dd { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 19px; user-select: all; overflow-wrap: anywhere; }
+.form { display: grid; gap: 18px; background: var(--bg-alt); border-radius: 16px; padding: clamp(22px, 3vw, 34px); }
+.form-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+.field { display: grid; gap: 6px; min-width: 0; }
+.field label { font-weight: 600; font-size: 16px; }
+.field input, .field select, .field textarea {
+  font: 400 17px var(--font-body); color: var(--fg); background: var(--bg);
+  border: 1.5px solid var(--line); border-radius: 10px; padding: 12px 14px; min-height: 48px; width: 100%;
+}
+.field textarea { min-height: 120px; resize: vertical; }
+.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent); }
+.form-error { color: var(--error); font-size: 16px; font-weight: 500; }
+.form-foot { font-size: 15px; color: var(--muted); }
+
+/* Pie */
+.site-footer { border-top: 1px solid var(--line); padding-block: 40px; }
+.footer-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px; }
+.footer-slogan { font-family: var(--font-display); font-weight: 700; font-size: 16px; }
+.footer-slogan span { color: var(--accent); }
+.footer-small { color: var(--muted); font-size: 15px; }
+
+/* Responsive */
+@media (max-width: 980px) {
+  .hero-grid, .contact { grid-template-columns: minmax(0, 1fr); }
+  .service { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .products { grid-template-columns: minmax(0, 1fr); }
+  .product-main { grid-row: auto; }
+  .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 24px; }
+  .step:nth-child(3) { padding-left: 0; border-left: 0; }
+  .prices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 860px) {
+  .nav-toggle { display: inline-flex; align-items: center; }
+  .nav-panel { display: none; position: absolute; left: 0; right: 0; top: 100%; background: var(--bg); border-bottom: 1px solid var(--line); padding: 16px max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px)); flex-direction: column; align-items: stretch; gap: 16px; }
+  .nav-panel.open { display: flex; }
+  .nav-links { flex-direction: column; gap: 4px; }
+  .nav-links a { display: block; padding: 10px 0; font-size: 18px; }
+}
+@media (max-width: 600px) {
+  body { font-size: 17px; }
+  .steps, .prices, .form-row { grid-template-columns: minmax(0, 1fr); }
+  .step + .step { padding-left: 0; border-left: 0; }
+  .term-body { font-size: 13px; min-height: 300px; padding: 16px; }
+  .hero-actions .btn { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .cursor { animation: none; }
+  * { transition: none !important; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#contenido">Saltar al contenido</a>
+
+<header class="site-header">
+  <div class="wrap header-row">
+    <a class="logo" href="#inicio" aria-label="Reintento, ir al inicio">
+      <svg width="34" height="34" viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M54 32 A22 22 0 1 1 47.56 16.44" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round"></path>
+        <polyline points="46.14,6.54 47.56,16.44 37.66,15.02" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"></polyline>
+        <polyline points="22,33 29,40 42,25" fill="none" stroke="var(--accent)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></polyline>
+      </svg>
+      <span class="logo-word">reintent<span>0</span></span>
+    </a>
+    <nav class="nav" aria-label="Principal">
+      <button class="nav-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-panel">Menú</button>
+      <div class="nav nav-panel" id="nav-panel">
+        <ul class="nav-links">
+          <li><a href="#servicios">Servicios</a></li>
+          <li><a href="#productos">Call centers</a></li>
+          <li><a href="#proceso">Cómo trabajamos</a></li>
+          <li><a href="#precios">Precios</a></li>
+          <li><a href="#preguntas">Preguntas</a></li>
+        </ul>
+        <a class="btn btn-primary" href="#contacto">Cotizar proyecto</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main id="contenido">
+
+<section class="hero" id="inicio">
+  <div class="wrap hero-grid">
+    <div>
+      <h1>Software que no se rinde hasta funcionar.</h1>
+      <p class="hero-lead">Hacemos páginas web, sistemas y CRMs a medida para empresas de El Salvador y Latinoamérica. Y para call centers tenemos herramientas listas para usar desde la primera semana.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#contacto">Cotizar mi proyecto</a>
+        <a class="btn btn-ghost" href="#productos">Ver herramientas para call centers</a>
+      </div>
+      <p class="hero-note">La primera reunión y el diagnóstico no tienen costo.</p>
+    </div>
+    <div class="term">
+      <div class="term-bar">
+        <div class="term-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+        <span class="term-title" aria-hidden="true">~/tu-empresa</span>
+        <button class="term-replay" id="term-replay" type="button" aria-label="Repetir la animación de la terminal">Repetir</button>
+      </div>
+      <div class="term-body" id="term-body" role="img" aria-label="Terminal de ejemplo: un despliegue falla dos veces, se reintenta y termina con exit 0, listo en producción.">
+        <div class="term-line"><span class="t-prompt">$</span> reintento deploy --cliente "tu-empresa"</div>
+        <div class="term-line t-dim">  compilando proyecto...</div>
+        <div class="term-line t-err">✕ error: el sistema anterior no exporta las ventas</div>
+        <div class="term-line">↻ reintento 1: escribimos un conector nuevo</div>
+        <div class="term-line t-err">✕ timeout: la base de datos tarda 9 s</div>
+        <div class="term-line">↻ reintento 2: optimizamos la consulta (0,3 s)</div>
+        <div class="term-line t-ok">✓ 148 pruebas pasan</div>
+        <div class="term-line t-ok">✓ publicado en producción</div>
+        <div class="term-line t-exit">exit 0</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="servicios" aria-labelledby="servicios-titulo">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="servicios-titulo">Lo que construimos para tu empresa</h2>
+      <p>Diseño, programación y publicación. Tú nos cuentas el problema y te entregamos algo que funciona.</p>
+    </div>
+    <ul class="services">
+      <li class="service">
+        <h3>Páginas web y landing pages</h3>
+        <p>Tu página lista para vender: rápida, se ve bien en el celular y lleva al cliente directo a tu WhatsApp.</p>
+        <p class="fit"><b>Ideal para</b> negocios que todavía venden solo por redes sociales.</p>
+      </li>
+      <li class="service">
+        <h3>Sistemas y CRMs a medida</h3>
+        <p>Clientes, ventas, inventario y reportes en un solo lugar, con usuarios y permisos para cada puesto.</p>
+        <p class="fit"><b>Ideal para</b> equipos a los que el Excel ya no les alcanza.</p>
+      </li>
+      <li class="service">
+        <h3>Portales para clientes y pagos</h3>
+        <p>Tus clientes consultan su estado, suben comprobantes y descargan facturas sin tener que escribirte.</p>
+        <p class="fit"><b>Ideal para</b> empresas que cobran cada mes.</p>
+      </li>
+      <li class="service">
+        <h3>Automatizaciones e integraciones</h3>
+        <p>Conectamos tus herramientas para que los reportes, avisos y copias de seguridad salgan solos.</p>
+        <p class="fit"><b>Ideal para</b> quien pierde horas copiando datos a mano.</p>
+      </li>
+      <li class="service">
+        <h3>Soporte y mantenimiento</h3>
+        <p>Actualizaciones, respaldos diarios y alguien que responde cuando algo falla.</p>
+        <p class="fit"><b>Ideal para</b> cualquier sistema que tu empresa no puede dejar caer.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section class="band section" id="productos" aria-labelledby="productos-titulo">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="productos-titulo">Herramientas hechas dentro de un call center</h2>
+      <p>No salieron de una pizarra. Nacieron resolviendo problemas diarios de una operación de ventas telefónicas y siguen en uso todos los días. Las adaptamos a tu operación.</p>
+    </div>
+    <div class="products">
+      <article class="product product-main">
+        <span class="badge-live"><i aria-hidden="true"></i>En uso diario en producción</span>
+        <h3>CRM para call centers</h3>
+        <p>Todo lo que pasa en tu piso de ventas, en una sola pantalla y en tiempo real.</p>
+        <ul>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Ventas por agente, por equipo y por día, actualizadas al momento.</span></li>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Monitoreo de calidad: faltas semanales por agente y alerta al administrador cuando hay que actuar.</span></li>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Avisos al instante en todas las pestañas, sin recargar la página.</span></li>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Permisos por puesto: administración, back office, supervisores y agentes.</span></li>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Respaldos automáticos diarios y acceso protegido.</span></li>
+        </ul>
+      </article>
+      <article class="product">
+        <h3>Portal de pagos de Google Ads</h3>
+        <p>Subes el recibo en PDF y el portal lee la fecha, la cuenta y el monto por ti.</p>
+        <ul>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Inversión por cuenta y por día, y conciliación de cada pago.</span></li>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Varias marcas, cada una con su propio portal.</span></li>
+        </ul>
+      </article>
+      <article class="product">
+        <h3>Cuadratura y recursos humanos</h3>
+        <p>Cierres de caja y control de personal sin hojas sueltas.</p>
+        <ul>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Inicio de sesión protegido contra intentos de adivinar contraseñas.</span></li>
+        </ul>
+      </article>
+    </div>
+    <div class="band-cta">
+      <a class="btn btn-primary" href="#contacto">Pedir una demostración</a>
+      <p>Te mostramos el sistema funcionando con datos de ejemplo.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="proceso" aria-labelledby="proceso-titulo">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="proceso-titulo">Fallamos. Reintentamos. Exit 0.</h2>
+      <p>Nuestro nombre es nuestro método. Los errores aparecen en todo proyecto; la diferencia es que nosotros los encontramos antes que tus clientes.</p>
+    </div>
+    <ol class="steps">
+      <li class="step">
+        <span class="step-num">Paso 1</span>
+        <h3>Escuchamos</h3>
+        <p>Una reunión sin costo para entender tu negocio. Sales con una propuesta y un precio cerrado.</p>
+      </li>
+      <li class="step">
+        <span class="step-num">Paso 2</span>
+        <h3>Primera versión</h3>
+        <p>En pocos días ves algo funcionando, no un documento de cien páginas.</p>
+      </li>
+      <li class="step step-retry">
+        <span class="step-num"><svg width="16" height="16" viewBox="0 0 64 64" aria-hidden="true"><path d="M54 32 A22 22 0 1 1 47.56 16.44" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"></path></svg>Paso 3</span>
+        <h3>Probamos y reintentamos</h3>
+        <p>Tu equipo lo usa, nos dice qué falla y lo corregimos. Las veces que haga falta.</p>
+      </li>
+      <li class="step step-exit">
+        <span class="step-num"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>Paso 4</span>
+        <h3>Exit 0</h3>
+        <p>Publicamos, capacitamos a tu equipo y nos quedamos para el soporte.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+
+<section class="section" id="precios" aria-labelledby="precios-titulo">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="precios-titulo">Precios claros desde el inicio</h2>
+      <p>Precios de referencia en dólares. El precio final de tu proyecto sale de la reunión de diagnóstico y no cambia después.</p>
+    </div>
+    <div class="prices">
+      <article class="price">
+        <h3>Landing page</h3>
+        <div class="price-amount"><small>desde</small> $300</div>
+        <p class="price-note">Pago único · lista en 1 semana</p>
+        <ul>
+          <li><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Una página con diseño propio</span></li>
+          <li><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Botón de WhatsApp y formulario</span></li>
+          <li><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Publicada en tu dominio</span></li>
+        </ul>
+        <a class="btn btn-ghost" href="#contacto" data-servicio="Landing page">Cotizar landing</a>
+      </article>
+      <article class="price">
+        <h3>Web empresarial</h3>
+        <div class="price-amount"><small>desde</small> $700</div>
+        <p class="price-note">Pago único · 2 a 3 semanas</p>
+        <ul>
+          <li><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Hasta 6 secciones o páginas</span></li>
+          <li><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Te ayudamos con los textos</span></li>
+          <li><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Lista para aparecer en Google</span></li>
+          <li><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Un mes de soporte incluido</span></li>
+        </ul>
+        <a class="btn btn-ghost" href="#contacto" data-servicio="Web empresarial">Cotizar web</a>
+      </article>
+      <article class="price">
+        <h3>Sistema a medida</h3>
+        <div class="price-amount"><small>desde</small> $1,500</div>
+        <p class="price-note">Por proyecto · 4 a 8 semanas</p>
+        <ul>
+          <li><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>CRM, portal o sistema interno</span></li>
+          <li><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Usuarios, permisos y reportes</span></li>
+          <li><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Capacitación a tu equipo</span></li>
+        </ul>
+        <a class="btn btn-ghost" href="#contacto" data-servicio="Sistema a medida">Cotizar sistema</a>
+      </article>
+      <article class="price price-dark">
+        <h3>Herramientas para call centers</h3>
+        <div class="price-amount">$15 <small>usuario / mes</small></div>
+        <p class="price-note">Suscripción · desde la primera semana</p>
+        <ul>
+          <li><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Adaptado a tu operación</span></li>
+          <li><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Actualizaciones y respaldos incluidos</span></li>
+          <li><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Soporte por WhatsApp</span></li>
+        </ul>
+        <a class="btn btn-ghost" href="#contacto" data-servicio="Herramientas para call centers">Pedir demostración</a>
+      </article>
+    </div>
+    <p class="prices-foot">¿Ya tienes web o sistema? El mantenimiento mensual empieza en $40.</p>
+  </div>
+</section>
+
+<section class="section" id="preguntas" aria-labelledby="preguntas-titulo" style="padding-top: 0;">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="preguntas-titulo">Preguntas frecuentes</h2>
+    </div>
+    <div class="faq">
+      <details>
+        <summary>¿Cuánto tarda un proyecto?<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v14M3 10h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"></path></svg></summary>
+        <p>Una landing page, alrededor de una semana. Una web empresarial, de dos a tres semanas. Un sistema a medida, de cuatro a ocho semanas según su tamaño. Te damos la fecha exacta en la propuesta.</p>
+      </details>
+      <details>
+        <summary>¿Cómo se paga?<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v14M3 10h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"></path></svg></summary>
+        <p>En los proyectos, la mitad al empezar y la otra mitad al entregar. Las herramientas para call centers se pagan cada mes, sin contrato de permanencia.</p>
+      </details>
+      <details>
+        <summary>¿La web y los datos quedan a mi nombre?<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v14M3 10h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"></path></svg></summary>
+        <p>Sí. El dominio, el contenido y los datos de tus clientes son tuyos. Si un día decides irte, te entregamos todo.</p>
+      </details>
+      <details>
+        <summary>¿Qué pasa si algo falla después de la entrega?<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v14M3 10h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"></path></svg></summary>
+        <p>Tienes 30 días de garantía: cualquier error que sea nuestro lo corregimos sin costo. Después puedes contratar el plan de mantenimiento.</p>
+      </details>
+      <details>
+        <summary>¿Trabajan con empresas fuera de El Salvador?<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v14M3 10h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"></path></svg></summary>
+        <p>Sí. Trabajamos en remoto con empresas de Latinoamérica y Estados Unidos, en español o en inglés.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="contacto" aria-labelledby="contacto-titulo" style="background: var(--bg-alt);">
+  <div class="wrap contact">
+    <div class="contact-info">
+      <h2 id="contacto-titulo">Cuéntanos qué necesitas</h2>
+      <p>Te respondemos el mismo día hábil con una propuesta de reunión.</p>
+      <dl class="contact-ways">
+        <div><dt>WhatsApp</dt><dd id="dato-whatsapp">+503 6006-2185</dd></div>
+        <div><dt>Correo</dt><dd id="dato-correo">danielernestoperezmartinez394@gmail.com</dd></div>
+      </dl>
+    </div>
+    <form class="form" id="form-contacto" novalidate>
+      <div class="form-row">
+        <div class="field">
+          <label for="f-nombre">Tu nombre</label>
+          <input id="f-nombre" name="nombre" type="text" autocomplete="name" required>
+        </div>
+        <div class="field">
+          <label for="f-empresa">Empresa</label>
+          <input id="f-empresa" name="empresa" type="text" autocomplete="organization">
+        </div>
+      </div>
+      <div class="field">
+        <label for="f-servicio">¿Qué necesitas?</label>
+        <select id="f-servicio" name="servicio">
+          <option>Landing page</option>
+          <option>Web empresarial</option>
+          <option>Sistema a medida</option>
+          <option>Herramientas para call centers</option>
+          <option>Mantenimiento de algo que ya tengo</option>
+          <option>Todavía no lo sé</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="f-mensaje">Cuéntanos un poco más</label>
+        <textarea id="f-mensaje" name="mensaje" placeholder="Por ejemplo: vendemos por Instagram y queremos una página con catálogo."></textarea>
+      </div>
+      <p class="form-error" id="form-error" role="alert" hidden></p>
+      <button class="btn btn-primary" type="submit">Enviar por WhatsApp</button>
+      <p class="form-foot">Se abre WhatsApp con tu mensaje listo; solo tienes que enviarlo.</p>
+    </form>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-row">
+    <a class="logo" href="#inicio" aria-label="Reintento, volver arriba">
+      <svg width="28" height="28" viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M54 32 A22 22 0 1 1 47.56 16.44" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round"></path>
+        <polyline points="46.14,6.54 47.56,16.44 37.66,15.02" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"></polyline>
+        <polyline points="22,33 29,40 42,25" fill="none" stroke="var(--accent)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></polyline>
+      </svg>
+      <span class="logo-word">reintent<span>0</span></span>
+    </a>
+    <p class="footer-slogan">Fallamos. Reintentamos. <span>Exit 0.</span></p>
+    <p class="footer-small">© 2026 Reintento · El Salvador</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  // Datos de contacto: cambiar aquí y en el bloque "contact-ways".
+  var WHATSAPP = '50360062185';
+
+  // Menú móvil
+  var toggle = document.getElementById('nav-toggle');
+  var panel = document.getElementById('nav-panel');
+  toggle.addEventListener('click', function () {
+    var abierto = panel.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', String(abierto));
+  });
+  panel.addEventListener('click', function (e) {
+    if (e.target.closest('a')) { panel.classList.remove('open'); toggle.setAttribute('aria-expanded', 'false'); }
+  });
+
+  // Los botones de precios preseleccionan el servicio
+  var select = document.getElementById('f-servicio');
+  document.querySelectorAll('[data-servicio]').forEach(function (a) {
+    a.addEventListener('click', function () { select.value = a.getAttribute('data-servicio'); });
+  });
+
+  // Formulario -> WhatsApp
+  var form = document.getElementById('form-contacto');
+  var error = document.getElementById('form-error');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var nombre = form.nombre.value.trim();
+    if (!nombre) {
+      error.textContent = 'Escribe tu nombre para que sepamos a quién responder.';
+      error.hidden = false;
+      form.nombre.focus();
+      return;
+    }
+    error.hidden = true;
+    var texto = 'Hola Reintento, soy ' + nombre +
+      (form.empresa.value.trim() ? ' de ' + form.empresa.value.trim() : '') +
+      '. Necesito: ' + form.servicio.value + '.' +
+      (form.mensaje.value.trim() ? '\n\n' + form.mensaje.value.trim() : '');
+    var a = document.createElement('a');
+    a.href = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(texto);
+    a.target = '_blank';
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  });
+
+  // Terminal del héroe: falla, reintenta y termina en exit 0
+  var body = document.getElementById('term-body');
+  var lineas = Array.prototype.slice.call(body.children);
+  var pausas = [0, 700, 900, 1100, 900, 1100, 900, 600, 700];
+  var timers = [];
+  var reducir = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function limpiar() { timers.forEach(clearTimeout); timers = []; }
+  function correr() {
+    limpiar();
+    if (reducir) { lineas.forEach(function (l) { l.hidden = false; }); return; }
+    lineas.forEach(function (l) { l.hidden = true; });
+    var t = 300;
+    lineas.forEach(function (l, i) {
+      t += pausas[i];
+      timers.push(setTimeout(function () { l.hidden = false; }, t));
+    });
+  }
+  document.getElementById('term-replay').addEventListener('click', correr);
+  correr();
+})();
+</script>
+</body>
+</html>
